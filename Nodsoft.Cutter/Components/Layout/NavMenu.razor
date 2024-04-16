@@ -1,29 +1,44 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorApp1</a>
+﻿@using System.Reflection
+
+<nav id="sidebar" class="collapsed" aria-label="sidebar">
+    <div class="navbar-brand">
+        <div class="d-flex gap-3 align-items-center flex-grow-1">
+            <a href="">NSYS Cutter</a>
+            <span class="version badge-transparent small">@Version</span>
+        </div>
+
+        <button type="button" class="sidebar-toggler">
+            <span aria-hidden="true" class="sidebar-toggler-icon" onclick="document.getElementById('sidebar').classList.toggle('collapsed')"></span>
+        </button>
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
+    <div role="presentation" class="vault-nav" aria-label="Vault navigation">
+        <div id="" class="nav-category" role="group" aria-label="root" aria-expanded="true">
+            <div class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <i class="bi bi-house-fill me-3" aria-hidden="true"></i>Home
+                </NavLink>
+            </div>
         </div>
+    </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+    <footer role="contentinfo" aria-label="footer">
+        <hr aria-hidden="true" style="opacity: 0.2; margin-bottom: 2rem;" />
+        
+        <ul aria-label="links">
+            <li><a target="_blank" rel="external" href="https://github.com/Nodsoft/MoltenObsidian">GitHub</a></li>
+            <li><a target="_blank" rel="external" href="https://www.nuget.org/packages/Nodsoft.MoltenObsidian">NuGet</a></li>
+        </ul>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
+        <small aria-description="copyright">© 2022-2024 Nodsoft Systems, ISC License</small>
+    </footer>
+</nav>
+
+@code {
+    private bool _collapseNavMenu = true;
+
+    private string? NavMenuCssClass => _collapseNavMenu ? "collapse" : null;
+    private void ToggleNavMenu() => _collapseNavMenu = !_collapseNavMenu;
+    
+    public static string Version => $"{typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]}";
+}

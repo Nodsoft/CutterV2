@@ -6,4 +6,26 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="DartSassBuilder" Version="1.1.0"/>
+        <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <DartSassOutputStyle>compressed</DartSassOutputStyle>
+        <DartSassOutputStyle Condition="'$(Configuration)' == 'Debug'">expanded</DartSassOutputStyle>
+        <DartSassOutputLevel>verbose</DartSassOutputLevel>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\responsive\_containers.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\responsive\_grids.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\_alerts.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\_buttons.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\_cards.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\_inputs.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\_modals.scss" />
+      <_ContentIncludedByDefault Remove="wwwroot\css\components\_text-decorations.scss" />
+    </ItemGroup>
+    
 </Project>

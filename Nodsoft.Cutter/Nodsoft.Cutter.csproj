@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="DartSassBuilder" Version="1.1.0"/>
         <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     </ItemGroup>
 
     <PropertyGroup>

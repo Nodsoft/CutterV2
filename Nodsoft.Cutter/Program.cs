@@ -1,4 +1,6 @@
 using Nodsoft.Cutter.Components;
+using Serilog;
+using Serilog.Events;
 
 namespace Nodsoft.Cutter;
 
@@ -6,6 +8,12 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(applyThemeToRedirectedOutput: true)
+            .CreateBootstrapLogger();
+        
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         
         // Add services to the container.
@@ -24,6 +32,13 @@ public class Program
     /// <returns>The updated services collection.</returns>
     public static IServiceCollection ConfigureServices(IServiceCollection services)
     {
+        // Logging
+        services.AddSerilog(static (services, lc) => lc
+            .ReadFrom.Configuration(services.GetRequiredService<IConfiguration>())
+            .ReadFrom.Services(services)
+        );
+        
+        // Blazor
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
         
@@ -34,16 +49,29 @@ public class Program
     /// Configures the application's request pipeline.
     /// </summary>
     /// <param name="app">The application to configure.</param>
-    /// <param name="env">The hosting environment.</param>
     /// <returns>The updated application.</returns>
     public static WebApplication Configure(WebApplication app)
     {
+        // Request Logging
+        app.UseSerilogRequestLogging(options =>
+        {
+            // Customize the message template
+            options.MessageTemplate = "{RequestScheme} {RequestMethod} {RequestPath} by {RequestClient} responded {StatusCode} in {Elapsed:0.0000} ms";
+    
+            // Attach additional properties to the request completion event
+            options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+            {
+                diagnosticContext.Set("RequestClient", httpContext.Connection.RemoteIpAddress);
+                diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme.ToUpperInvariant());
+            };
+        });
+        
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Error");
             app.UseHsts();
         }
-
+        
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseAntiforgery();

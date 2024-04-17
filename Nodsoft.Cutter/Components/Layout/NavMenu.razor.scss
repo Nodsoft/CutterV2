@@ -93,8 +93,7 @@ nav {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-
-
+  
   &:not([id=""]) {
     margin-bottom: 0.3rem;
 
@@ -115,8 +114,8 @@ nav {
   padding-block: 1rem;
   padding-inline: 1rem;
 
-  &.active {
-    background-color: rgba(255, 255, 255, 0.25);
+  &:has(a.active) {
+    background-color: rgba(255, 255, 255, 0.15);
     color: white !important;
   }
 

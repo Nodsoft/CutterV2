@@ -4,32 +4,53 @@ namespace Nodsoft.Cutter;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        
         // Add services to the container.
-        builder.Services.AddRazorComponents()
+        ConfigureServices(builder.Services);
+
+        WebApplication app = builder.Build();
+        Configure(app);
+        
+        await app.RunAsync();
+    }
+    
+    /// <summary>
+    /// Adds services to the application's service collection.
+    /// </summary>
+    /// <param name="services">The services collection to add services to.</param>
+    /// <returns>The updated services collection.</returns>
+    public static IServiceCollection ConfigureServices(IServiceCollection services)
+    {
+        services.AddRazorComponents()
             .AddInteractiveServerComponents();
-
-        var app = builder.Build();
-
-        // Configure the HTTP request pipeline.
+        
+        return services;
+    }
+    
+    /// <summary>
+    /// Configures the application's request pipeline.
+    /// </summary>
+    /// <param name="app">The application to configure.</param>
+    /// <param name="env">The hosting environment.</param>
+    /// <returns>The updated application.</returns>
+    public static WebApplication Configure(WebApplication app)
+    {
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
         app.UseHttpsRedirection();
-
         app.UseStaticFiles();
         app.UseAntiforgery();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
-
-        app.Run();
+        
+        return app;
     }
 }

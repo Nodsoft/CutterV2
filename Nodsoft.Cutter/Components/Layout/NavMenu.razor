@@ -18,12 +18,10 @@
 
     <div role="presentation" class="sidenav" aria-label="Vault navigation">
         <div id="" class="nav-category" role="group" aria-label="root" aria-expanded="true">
-            <div class="nav-item">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <i class="bi bi-house-fill me-3" aria-hidden="true"></i>
-                    <label>Home</label>
-                </NavLink>
-            </div>
+            <NavLink class="nav-item nav-link" href="" Match="NavLinkMatch.All">
+                <i class="bi bi-house-fill me-3" aria-hidden="true"></i>
+                <label>Home</label>
+            </NavLink>
         </div>
     </div>
 
@@ -36,29 +34,23 @@
                     <label>@_user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value</label>
                 </div>
                 
-                <div class="nav-item">
-                    <NavLink class="nav-link" href="profile" Match="NavLinkMatch.All">
-                        <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
-                        <label>Profile</label>
-                    </NavLink>
-                </div>
-
-                <div class="nav-item">
-                    <NavLink class="nav-link" href="logout" Match="NavLinkMatch.All">
-                        <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
-                        <label>Logout</label>
-                    </NavLink>
-                </div>
+                <NavLink class="nav-item nav-link" href="profile" Match="NavLinkMatch.All">
+                    <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
+                    <label>Profile</label>
+                </NavLink>
+                
+                <NavLink class="nav-item nav-link" href="logout" Match="NavLinkMatch.All">
+                    <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
+                    <label>Logout</label>
+                </NavLink>
             </div>
         }
         else
         {
-            <div id="" class="nav-category" role="group" aria-label="auth" aria-expanded="true">
-                <div class="nav-item">
-                    <NavLink class="nav-link" href="challenge" Match="NavLinkMatch.All">
-                        <i class="bi bi-github me-3" aria-hidden="true"></i>Login
-                    </NavLink>
-                </div>
+            <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                <NavLink class="nav-item nav-link" href="challenge" Match="NavLinkMatch.All">
+                    <i class="bi bi-github me-3" aria-hidden="true"></i>Login
+                </NavLink>
             </div>
         }
     </div>

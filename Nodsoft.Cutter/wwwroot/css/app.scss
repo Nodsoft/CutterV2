@@ -67,6 +67,8 @@ $font-family-sans-serif:      "Nunito", -apple-system, BlinkMacSystemFont, "Sego
 @import "blazor";
 @import "zenith-components";
 
+@import "components/navigation";
+
 
 .bg-dark-acrylic {
     background-color: rgba($dark, 0.6);

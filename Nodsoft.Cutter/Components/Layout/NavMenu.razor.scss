@@ -35,7 +35,7 @@ nav {
         margin-bottom: 0;
       }
 
-      .vault-nav, footer {
+      .sidenav, footer {
         display: none;
         visibility: hidden;
       }
@@ -65,7 +65,7 @@ nav {
     }
   }
 
-  .vault-nav {
+  .sidenav {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -107,11 +107,31 @@ nav {
   }
 }
 
+i.bi {
+  font-size: 1.25rem;
+}
+
+.nav-title {
+  padding-block: 1rem;
+  padding-inline: 1rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  
   border-radius: 4px;
   transition: background-color 0.2s;
 
-  padding-block: 1rem;
+  min-height: 3.5rem;
+  //padding-block: 1rem;
   padding-inline: 1rem;
 
   &:has(a.active) {

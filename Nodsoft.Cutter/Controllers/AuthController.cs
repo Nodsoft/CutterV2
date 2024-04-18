@@ -25,13 +25,13 @@ public class AuthController : ControllerBase
     /// Provides a callback for authenticating via GitHub.
     /// </summary>
     [HttpGet, HttpPost, Route("callback/login/github")]
-    public async ValueTask<SignInResult> LoginCallback()
+    public async ValueTask<SignInResult> LoginCallbackAsync()
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
         AuthenticateResult result = await HttpContext.AuthenticateAsync(OpenIddictClientWebIntegrationConstants.Providers.GitHub);
 
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
-        ClaimsIdentity identity = new(authenticationType: "ExternalLogin");
+        ClaimsIdentity identity = new(result.Principal!.Claims, "ExternalLogin");
 
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
@@ -56,5 +56,16 @@ public class AuthController : ControllerBase
         // For scenarios where the default sign-in handler configured in the ASP.NET Core
         // authentication options shouldn't be used, a specific scheme can be specified here.
         return SignIn(new(identity), properties);
+    }
+    
+    /// <summary>
+    /// Handles logging out of the application.
+    /// </summary>
+    /// <returns>A sign-out result.</returns>
+    [HttpGet, Route("logout")]
+    public async ValueTask<IActionResult> LogoutAsync()
+    {
+        await HttpContext.SignOutAsync();
+        return Redirect("/");
     }
 }

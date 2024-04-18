@@ -1,4 +1,8 @@
 ﻿@using System.Reflection
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using OpenIddict.Client.WebIntegration
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <nav id="sidebar" class="collapsed" aria-label="sidebar">
     <div class="navbar-brand">
@@ -12,14 +16,51 @@
         </button>
     </div>
 
-    <div role="presentation" class="vault-nav" aria-label="Vault navigation">
+    <div role="presentation" class="sidenav" aria-label="Vault navigation">
         <div id="" class="nav-category" role="group" aria-label="root" aria-expanded="true">
             <div class="nav-item">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <i class="bi bi-house-fill me-3" aria-hidden="true"></i>Home
+                    <i class="bi bi-house-fill me-3" aria-hidden="true"></i>
+                    <label>Home</label>
                 </NavLink>
             </div>
         </div>
+    </div>
+
+    <div role="presentation" class="sidenav-bottom" aria-label="Vault navigation">
+        @if (_user is not null)
+        {
+            <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                <div class="nav-title d-flex gap-3 align-items-center" style="padding-inline-start: 0.5rem">
+                    <img src="@_user.Claims.FirstOrDefault(c => c.Type is "avatar_url")?.Value" alt="avatar" class="img-fluid rounded-circle" height="32" width="32" />
+                    <label>@_user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value</label>
+                </div>
+                
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="profile" Match="NavLinkMatch.All">
+                        <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
+                        <label>Profile</label>
+                    </NavLink>
+                </div>
+
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="logout" Match="NavLinkMatch.All">
+                        <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
+                        <label>Logout</label>
+                    </NavLink>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div id="" class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="challenge" Match="NavLinkMatch.All">
+                        <i class="bi bi-github me-3" aria-hidden="true"></i>Login
+                    </NavLink>
+                </div>
+            </div>
+        }
     </div>
 
     <footer role="contentinfo" aria-label="footer">
@@ -35,10 +76,18 @@
 </nav>
 
 @code {
-    private bool _collapseNavMenu = true;
-
-    private string? NavMenuCssClass => _collapseNavMenu ? "collapse" : null;
-    private void ToggleNavMenu() => _collapseNavMenu = !_collapseNavMenu;
     
     public static string Version => $"{typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]}";
+    
+    private ClaimsPrincipal? _user;
+    
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (await AuthenticationStateProvider.GetAuthenticationStateAsync() is { User: { Identity.IsAuthenticated: true } user})
+        {
+            _user = user;
+        }
+    }
+
 }

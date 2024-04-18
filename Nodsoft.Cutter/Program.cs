@@ -102,6 +102,9 @@ public class Program
                         .SetRedirectUri("callback/login/github"));
             });
         
+        // Services
+        services.AddScoped<UserService>();
+        
         return services;
     }
     

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Nodsoft.Cutter.Data.Models;
+using Nodsoft.Cutter.Services;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.WebIntegration;
 
@@ -14,6 +16,16 @@ namespace Nodsoft.Cutter.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
+    private readonly UserService _userService;
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthController"/> class.
+    /// </summary>
+    public AuthController(UserService userService, LinksService linksService)
+    {
+        _userService = userService;
+    }
+    
     /// <summary>
     /// Handles authentication challenges.
     /// </summary>
@@ -25,7 +37,7 @@ public class AuthController : ControllerBase
     /// Provides a callback for authenticating via GitHub.
     /// </summary>
     [HttpGet, HttpPost, Route("callback/login/github")]
-    public async ValueTask<SignInResult> LoginCallbackAsync()
+    public async ValueTask<IActionResult> LoginCallbackAsync()
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
         AuthenticateResult result = await HttpContext.AuthenticateAsync(OpenIddictClientWebIntegrationConstants.Providers.GitHub);
@@ -33,6 +45,14 @@ public class AuthController : ControllerBase
         // Build an identity based on the external claims and that will be used to create the authentication cookie.
         ClaimsIdentity identity = new(result.Principal!.Claims, "ExternalLogin");
 
+        // Retrieve and refresh the user information from the database.
+        User user = await _userService.RefreshUserAsync(result.Principal, HttpContext);
+
+        if (user.IsBlocked)
+        {
+            return Forbid();
+        }
+        
         // By default, OpenIddict will automatically try to map the email/name and name identifier claims from
         // their standard OpenID Connect or provider-specific equivalent, if available. If needed, additional
         // claims can be resolved from the external identity and copied to the final authentication cookie.

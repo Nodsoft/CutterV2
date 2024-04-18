@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Nodsoft.Cutter.Data.Models;
@@ -10,33 +11,40 @@ namespace Nodsoft.Cutter.Data.Models;
 /// Represents a link that can be used to redirect to a destination URL.
 /// </summary>
 [Index(nameof(Name), IsUnique = true)]
-[Description("Represents a link that can be used to redirect to a destination URL.")]
-public class Link
+public sealed class Link
 {
     /// <summary>
     /// The unique identifier for the link.
     /// </summary>
-    [Key, Description("The unique identifier for the link.")]
+    [Key]
     public Guid Id { get; init; }
     
     /// <summary>
     /// The fragment of the URL that the link is accessed by.
     /// </summary>
-    [Required, RegularExpression(@"^[a-zA-Z\d-_]+$"), Description("The fragment of the URL that the link is accessed by.")]
+    [Required, RegularExpression(@"^[a-zA-Z\d-_]+$"), MaxLength(512)]
     public string Name { get; init; }
 
     /// <summary>
     /// The destination URL of the redirect.
     /// </summary>
-    [Required, Url, Description("The destination URL of the redirect.")]
+    [Required, Url]
     public string Destination { get; init; }
 
     /// <summary>
     /// The date and time the link was created.
     /// </summary>
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity), Description("The date and time the link was created.")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public DateTimeOffset CreatedAt { get; init; }
 
-    [Required, Description("The IP address the link was created from.")]
+    /// <summary>
+    /// The user that created the link.
+    /// </summary>
+    public User CreatedBy { get; init; }
+    
+    /// <summary>
+    /// The IP address the link was created from.
+    /// </summary>
+    [Required]
     public IPAddress CreatedFromIp { get; init; }
 }

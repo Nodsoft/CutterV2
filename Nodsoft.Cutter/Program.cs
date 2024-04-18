@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Components;
 using Nodsoft.Cutter.Data;
+using OpenIddict.Validation.AspNetCore;
 using Serilog;
 using Serilog.Events;
 
@@ -8,6 +9,8 @@ namespace Nodsoft.Cutter;
 
 public class Program
 {
+    private static IConfiguration _configuration = null!;
+    
     public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
@@ -17,12 +20,19 @@ public class Program
             .CreateBootstrapLogger();
         
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        _configuration = builder.Configuration;
         
         // Add services to the container.
         ConfigureServices(builder.Services);
 
         WebApplication app = builder.Build();
         Configure(app);
+
+        await using (AsyncServiceScope scope = app.Services.CreateAsyncScope())
+        {
+            // Migrate the database
+            await scope.ServiceProvider.GetRequiredService<CutterDbContext>().Database.MigrateAsync();
+        }
         
         await app.RunAsync();
     }
@@ -40,17 +50,58 @@ public class Program
             .ReadFrom.Services(services)
         );
         
+        // API
+        services.AddControllers();
+        
         // Blazor
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
+
+        services.AddHttpContextAccessor();
         
         // EF Core / Postgres
         // Add from connection strings
         services.AddDbContext<CutterDbContext>(static (services, options) =>
         {
             options.UseNpgsql(services.GetRequiredService<IConfiguration>().GetConnectionString("Database"));
+            options.UseOpenIddict();
             options.UseSnakeCaseNamingConvention();
         });
+        
+        // Auth / OpenIddict using GitHub
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+        });
+        
+        services.AddOpenIddict()
+            .AddCore(options =>
+            {
+                options.UseEntityFrameworkCore()
+                    .UseDbContext<CutterDbContext>()
+                    .ReplaceDefaultEntities<Guid>();
+            })
+            .AddClient(static options =>
+            {
+                // Allow the OpenIddict client to negotiate the authorization code flow.
+                options.AllowAuthorizationCodeFlow();
+
+                // Register the signing and encryption credentials used to protect
+                // sensitive data like the state tokens produced by OpenIddict.
+                options.AddDevelopmentEncryptionCertificate()
+                    .AddDevelopmentSigningCertificate();
+
+                // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
+                options.UseAspNetCore()
+                    .EnableRedirectionEndpointPassthrough();
+
+                // Register the GitHub integration.
+                options.UseWebProviders()
+                    .AddGitHub(static options => options
+                        .SetClientId(_configuration["Auth:GitHub:ClientId"] ?? throw new InvalidOperationException("GitHub Client ID not set."))
+                        .SetClientSecret(_configuration["Auth:GitHub:ClientSecret"] ?? throw new InvalidOperationException("GitHub Client Secret not set."))
+                        .SetRedirectUri("callback/login/github"));
+            });
         
         return services;
     }
@@ -60,7 +111,7 @@ public class Program
     /// </summary>
     /// <param name="app">The application to configure.</param>
     /// <returns>The updated application.</returns>
-    public static WebApplication Configure(WebApplication app)
+    private static WebApplication Configure(WebApplication app)
     {
         // Request Logging
         app.UseSerilogRequestLogging(options =>

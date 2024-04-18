@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Components;
 using Nodsoft.Cutter.Data;
@@ -69,10 +70,8 @@ public class Program
         });
         
         // Auth / OpenIddict using GitHub
-        services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-        });
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie();
         
         services.AddOpenIddict()
             .AddCore(options =>
@@ -137,6 +136,8 @@ public class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
 
+        app.MapDefaultControllerRoute();
+        
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
         

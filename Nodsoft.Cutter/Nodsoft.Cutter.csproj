@@ -11,6 +11,10 @@
         <PackageReference Include="DartSassBuilder" Version="1.1.0"/>
         <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
         <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
         <PackageReference Include="OpenIddict.AspNetCore" Version="5.4.0" />

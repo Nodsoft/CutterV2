@@ -64,7 +64,7 @@ public class Program
         services.AddDbContext<CutterDbContext>(static (services, options) =>
         {
             options.UseNpgsql(services.GetRequiredService<IConfiguration>().GetConnectionString("Database"));
-            options.UseOpenIddict();
+            options.UseOpenIddict<Guid>();
             options.UseSnakeCaseNamingConvention();
         });
         

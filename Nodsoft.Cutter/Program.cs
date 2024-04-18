@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Components;
+using Nodsoft.Cutter.Data;
 using Serilog;
 using Serilog.Events;
 
@@ -41,6 +43,14 @@ public class Program
         // Blazor
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
+        
+        // EF Core / Postgres
+        // Add from connection strings
+        services.AddDbContext<CutterDbContext>(static (services, options) =>
+        {
+            options.UseNpgsql(services.GetRequiredService<IConfiguration>().GetConnectionString("Database"));
+            options.UseSnakeCaseNamingConvention();
+        });
         
         return services;
     }

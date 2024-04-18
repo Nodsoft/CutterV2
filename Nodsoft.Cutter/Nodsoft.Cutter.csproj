@@ -8,7 +8,10 @@
 
     <ItemGroup>
         <PackageReference Include="DartSassBuilder" Version="1.1.0"/>
+        <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
         <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     </ItemGroup>
 
@@ -17,16 +20,5 @@
         <DartSassOutputStyle Condition="'$(Configuration)' == 'Debug'">expanded</DartSassOutputStyle>
         <DartSassOutputLevel>verbose</DartSassOutputLevel>
     </PropertyGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\responsive\_containers.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\responsive\_grids.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\_alerts.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\_buttons.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\_cards.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\_inputs.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\_modals.scss" />
-      <_ContentIncludedByDefault Remove="wwwroot\css\components\_text-decorations.scss" />
-    </ItemGroup>
     
 </Project>

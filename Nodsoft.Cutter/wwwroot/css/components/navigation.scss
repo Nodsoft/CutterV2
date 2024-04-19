@@ -21,9 +21,13 @@
   //padding-block: 1rem;
   padding-inline: 1rem;
 
-  &:has(a.active) {
+  &.active {
     background-color: rgba(255, 255, 255, 0.15);
     color: white !important;
+  }
+  
+  * {
+    pointer-events: none;
   }
 
   &:hover, &:focus {

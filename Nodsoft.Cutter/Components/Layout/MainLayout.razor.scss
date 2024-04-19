@@ -17,7 +17,7 @@
   main {
 	flex: 1;
   }
-
+	
   .top-row {
 	justify-content: flex-end;
 	height: 3.5rem;
@@ -53,7 +53,7 @@
 	}
 
 	&:not(.auth) {
-	  @media (max-width: 640.98px) {
+	  @media (max-width: 641px) {
 		display: none;
 	  }
 	}

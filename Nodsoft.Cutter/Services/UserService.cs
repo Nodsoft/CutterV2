@@ -60,4 +60,17 @@ public sealed class UserService
         await _dbContext.SaveChangesAsync();
         return user;
     }
+    
+    /// <summary>
+    /// Disables a user in the database.
+    /// </summary>
+    /// <param name="id">The unique identifier of the user to disable.</param>
+    /// <returns>The disabled user.</returns>
+    public async ValueTask<User> DisableUserAsync(uint id)
+    {
+        User user = await GetUserAsync(id) ?? throw new InvalidOperationException("The user does not exist.");
+        user.IsBlocked = true;
+        await _dbContext.SaveChangesAsync();
+        return user;
+    }
 }

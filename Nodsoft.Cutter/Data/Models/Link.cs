@@ -47,4 +47,12 @@ public sealed class Link
     /// </summary>
     [Required]
     public IPAddress CreatedFromIp { get; init; }
+    
+    /// <summary>
+    /// Whether the link is enabled and can be used.
+    /// </summary>
+    /// <remarks>
+    /// This is used to disable links without removing them from the database.
+    /// </remarks>
+    public bool IsBlocked { get; set; }
 }

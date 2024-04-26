@@ -34,12 +34,12 @@
                     <label>@_user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value</label>
                 </div>
                 
-                <NavLink class="nav-item nav-link" href="profile" Match="NavLinkMatch.All">
+                <NavLink class="nav-item nav-link" href="profile">
                     <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
                     <label>Profile</label>
                 </NavLink>
                 
-                <NavLink class="nav-item nav-link" href="logout" Match="NavLinkMatch.All">
+                <NavLink class="nav-item nav-link" href="logout">
                     <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
                     <label>Logout</label>
                 </NavLink>
@@ -48,7 +48,7 @@
         else
         {
             <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
-                <NavLink class="nav-item nav-link" href="challenge" Match="NavLinkMatch.All">
+                <NavLink class="nav-item nav-link" href="challenge">
                     <i class="bi bi-github me-3" aria-hidden="true"></i>Login
                 </NavLink>
             </div>

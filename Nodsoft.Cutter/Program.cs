@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Components;
 using Nodsoft.Cutter.Data;
+using Nodsoft.Cutter.Infrastructure.Authorization;
 using Nodsoft.Cutter.Services;
 using OpenIddict.Validation.AspNetCore;
 using Serilog;
@@ -61,16 +63,16 @@ public class Program
 
         services.AddHttpContextAccessor();
         
-        // EF Core / Postgres
-        // Add from connection strings
+        // EF Core: Postgres
         services.AddDbContext<CutterDbContext>(static (services, options) =>
         {
+            // Add from connection strings
             options.UseNpgsql(services.GetRequiredService<IConfiguration>().GetConnectionString("Database"));
             options.UseOpenIddict<Guid>();
             options.UseSnakeCaseNamingConvention();
         });
         
-        // Auth / OpenIddict using GitHub
+        // Authentication: OpenIddict using GitHub
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie();
         
@@ -103,8 +105,19 @@ public class Program
                         .SetRedirectUri("callback/login/github"));
             });
         
+        // Authorization
+        services.AddAuthorizationBuilder()
+            // Policies
+            .AddPolicy(AuthorizationPolicies.AccountEnabled, policy => policy.Requirements.Add(new AccountEnabledRequirement()))
+            .AddPolicy(AuthorizationPolicies.OwnLinks, policy => policy.Requirements.Add(new OwnLinksRequirement()));
+        
+        // Policies
+        services.AddScoped<IAuthorizationHandler, AccountEnabledRequirementHandler>();
+        services.AddSingleton<IAuthorizationHandler, OwnLinksRequirementHandler>();
+            
         // Services
         services.AddScoped<UserService>();
+        services.AddScoped<LinksService>();
         
         return services;
     }

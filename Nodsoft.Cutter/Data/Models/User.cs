@@ -23,7 +23,7 @@ public sealed class User : IDisposable
     /// The username of the user (as defined on GitHub).
     /// </summary>
     [Required, MaxLength(64)]
-    public string Username { get; set; }
+    public string Username { get; set; } = "";
 
     /// <summary>
     /// The date and time the user was created.
@@ -48,7 +48,7 @@ public sealed class User : IDisposable
     /// <remarks>
     /// This is stored as a JSON string to allow for easy deserialization.
     /// </remarks>
-    public JsonDocument RawObject { get; set; }
+    public JsonDocument RawObject { get; set; } = null!;
 
     /// <summary>
     /// Determines whether the user is able to use the API (blocking / unblocking).

@@ -1,6 +1,9 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Nodsoft.Cutter.Data;
 using Nodsoft.Cutter.Data.Models;
+using Nodsoft.Cutter.Infrastructure.Configuration;
 
 namespace Nodsoft.Cutter.Services;
 
@@ -11,16 +14,26 @@ public sealed class LinksService
 {
     private readonly CutterDbContext _dbContext;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IOptionsSnapshot<CutterConfiguration> _cutterConfig;
+    private readonly ILogger<LinksService> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LinksService"/> class.
     /// </summary>
     /// <param name="dbContext">The database context for the Cutter API.</param>
     /// <param name="httpContextAccessor">The HTTP context accessor for the current request.</param>
-    public LinksService(CutterDbContext dbContext, IHttpContextAccessor httpContextAccessor)
-    {
+    /// <param name="cutterConfig">The configuration for the Cutter API.</param>
+    /// <param name="logger">The logger for the links service.</param>
+    public LinksService(
+        CutterDbContext dbContext, 
+        IHttpContextAccessor httpContextAccessor, 
+        IOptionsSnapshot<CutterConfiguration> cutterConfig,
+        ILogger<LinksService> logger
+    ) {
         _dbContext = dbContext;
         _httpContextAccessor = httpContextAccessor;
+        _cutterConfig = cutterConfig;
+        _logger = logger;
     }
     
     /// <summary>
@@ -47,17 +60,33 @@ public sealed class LinksService
     /// <returns>The newly inserted link.</returns>
     public async ValueTask<Link> InsertLinkAsync(string? name, string destination)
     {
+        uint uid = uint.Parse(_httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("The user is not authenticated."));
+        User user = await _dbContext.Users.FindAsync(uid) ?? throw new InvalidOperationException("The user does not exist.");
+        
+        if (name is not null && await _dbContext.Links.AnyAsync(l => l.Name == name))
+        {
+            _logger.LogWarning("User {Uid} attempted to create a link with the name {Name}, but the name is already in use for destination {Destination}", uid, name, destination);
+            throw new InvalidOperationException("The link already exists.");
+        }
+
+        if (await _dbContext.Links.FirstOrDefaultAsync(l => l.Destination == destination) is { } existing)
+        {
+            _logger.LogInformation("User {Uid} attempted to create a link with destination {Destination}, but the destination already exists under another name ({Name})", uid, destination, existing.Name);
+            return existing;
+        }
+        
         Link link = new()
         {
             Id = Guid.NewGuid(),
-            Name = name ?? Base62Generator.GenerateString(6),
+            Name = name is null or "" ? Base62Generator.GenerateString(6) : name,
             Destination = destination,
-            CreatedBy = await _dbContext.Users.FindAsync(1) ?? throw new InvalidOperationException("The legacy user is missing."),
+            CreatedBy = user,
             CreatedFromIp = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress ?? throw new InvalidOperationException("The remote IP address is missing.")
         };
         
         _dbContext.Links.Add(link);
         await _dbContext.SaveChangesAsync();
+        _logger.LogInformation("User {Uid} created link {LinkId} with name {Name} and destination {Destination}", link.CreatedBy.Id, link.Id, link.Name, link.Destination);
         return link;
     }
     
@@ -73,4 +102,14 @@ public sealed class LinksService
         await _dbContext.SaveChangesAsync();
         return link;
     }
+    
+    /// <summary>
+    /// Gets the redirect URI for a specified link.
+    /// </summary>
+    /// <param name="link">The link to get the redirect URI for.</param>
+    /// <returns>The redirect URI for the specified link.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the link domain is invalid.</exception>
+    public Uri GetLinkUri(Link link) => Uri.TryCreate(new(_cutterConfig.Value.LinksDomain), link.Name, out Uri? uri) 
+        ? uri 
+        : throw new InvalidOperationException("The link domain is invalid.");
 }

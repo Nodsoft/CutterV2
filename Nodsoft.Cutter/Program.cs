@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Components;
 using Nodsoft.Cutter.Data;
 using Nodsoft.Cutter.Infrastructure.Authorization;
+using Nodsoft.Cutter.Infrastructure.Configuration;
 using Nodsoft.Cutter.Services;
 using OpenIddict.Validation.AspNetCore;
 using Serilog;
@@ -104,6 +105,8 @@ public class Program
                         .SetClientSecret(_configuration["Auth:GitHub:ClientSecret"] ?? throw new InvalidOperationException("GitHub Client Secret not set."))
                         .SetRedirectUri("callback/login/github"));
             });
+
+        services.AddCascadingAuthenticationState();
         
         // Authorization
         services.AddAuthorizationBuilder()
@@ -118,6 +121,9 @@ public class Program
         // Services
         services.AddScoped<UserService>();
         services.AddScoped<LinksService>();
+        
+        // Configuration
+        services.Configure<CutterConfiguration>(_configuration.GetSection("Cutter"));
         
         return services;
     }

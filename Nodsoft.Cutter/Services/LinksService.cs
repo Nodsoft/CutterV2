@@ -104,6 +104,33 @@ public sealed class LinksService
     public async ValueTask<Link> DisableLinkAsync(string name)
     {
         Link link = await GetLinkAsync(name) ?? throw new InvalidOperationException("The link does not exist.");
+        link.IsDisabled = true;
+        await _dbContext.SaveChangesAsync();
+        return link;
+    }
+    
+    /// <summary>
+    /// Enables a link in the database.
+    /// </summary>
+    /// <param name="name">The fragment of the link to enable.</param>
+    /// <returns>The enabled link.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the link does not exist.</exception>
+    public async ValueTask<Link> EnableLinkAsync(string name)
+    {
+        Link link = await GetLinkAsync(name) ?? throw new InvalidOperationException("The link does not exist.");
+        link.IsDisabled = false;
+        await _dbContext.SaveChangesAsync();
+        return link;
+    }
+    
+    /// <summary>
+    /// Blocks a Link in the database.
+    /// </summary>
+    /// <param name="name">The fragment of the link to block.</param>
+    /// <returns>The blocked link.</returns>
+    public async ValueTask<Link> BlockLinkAsync(string name)
+    {
+        Link link = await GetLinkAsync(name) ?? throw new InvalidOperationException("The link does not exist.");
         link.IsBlocked = true;
         await _dbContext.SaveChangesAsync();
         return link;

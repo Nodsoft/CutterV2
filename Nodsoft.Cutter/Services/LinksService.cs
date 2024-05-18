@@ -35,6 +35,12 @@ public sealed class LinksService
         _cutterConfig = cutterConfig;
         _logger = logger;
     }
+
+    /// <summary>
+    /// Gets all links in the database.
+    /// </summary>
+    /// <returns>An enumerable collection of all links in the database.</returns>
+    public IQueryable<Link> GetLinks() => _dbContext.Links.AsNoTrackingWithIdentityResolution();
     
     /// <summary>
     /// Gets a link by its fragment.

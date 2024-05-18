@@ -8,7 +8,7 @@ namespace Nodsoft.Cutter.Components.Validation;
 /// </summary>
 public class CustomValidation : ComponentBase
 {
-    private ValidationMessageStore? messageStore;
+    private ValidationMessageStore? _messageStore;
 
     [CascadingParameter]
     private EditContext? CurrentEditContext { get; set; }
@@ -21,10 +21,10 @@ public class CustomValidation : ComponentBase
                 $"{nameof(CustomValidation)} requires a cascading parameter of type {nameof(EditContext)}.");
         }
 
-        messageStore = new(CurrentEditContext);
+        _messageStore = new(CurrentEditContext);
 
-        CurrentEditContext.OnValidationRequested += (s, e) => messageStore?.Clear();
-        CurrentEditContext.OnFieldChanged += (s, e) => messageStore?.Clear(e.FieldIdentifier);
+        CurrentEditContext.OnValidationRequested += (_, _) => _messageStore?.Clear();
+        CurrentEditContext.OnFieldChanged += (_, e) => _messageStore?.Clear(e.FieldIdentifier);
     }
 
     public void DisplayErrors(Dictionary<string, List<string>> errors)
@@ -34,9 +34,9 @@ public class CustomValidation : ComponentBase
             return;
         }
 
-        foreach ((string? key, var value) in errors)
+        foreach ((string? key, List<string> value) in errors)
         {
-            messageStore?.Add(CurrentEditContext.Field(key), value);
+            _messageStore?.Add(CurrentEditContext.Field(key), value);
         }
 
         CurrentEditContext.NotifyValidationStateChanged();
@@ -44,7 +44,7 @@ public class CustomValidation : ComponentBase
 
     public void ClearErrors()
     {
-        messageStore?.Clear();
+        _messageStore?.Clear();
         CurrentEditContext?.NotifyValidationStateChanged();
     }
 }

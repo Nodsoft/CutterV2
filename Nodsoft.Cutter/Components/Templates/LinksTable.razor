@@ -1,0 +1,71 @@
+@inject LinksService LinksService
+
+@if (Links is not null && Links.Any())
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Destination</th>
+                <th>Created At</th>
+                
+                @if (!SelfLinksOnly)
+                {
+                    <th>Created By</th>
+                    <th>IP Address</th>
+                }
+                
+                <th>Status</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            @foreach (Link link in Links)
+            {
+                <tr @key="link.Id">
+                    <td><code>@link.Id</code></td>
+                    <td><code>@link.Name</code></td>
+                    <td><a target="_blank" href="@link.Destination" title="@link.Destination">@link.Destination</a></td>
+                    <td>@link.CreatedAt.ToString("g")</td>
+                    
+                    @if (!SelfLinksOnly)
+                    {
+                        <td><a target="_blank" href="https://github.com/@link.CreatedBy.Username" title="@link.CreatedBy.Username">@link.CreatedBy.Username</a></td>
+                        <td>@link.CreatedFromIp</td>
+                    }
+                    
+                    <td>@RenderLinkStatus(false, link.IsBlocked)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-info">No links found.</p>
+}
+
+
+@code {
+    [Parameter, EditorRequired] public List<Link>? Links { get; set; }
+
+    [Parameter] public bool SelfLinksOnly { get; set; }
+
+    @* ReSharper disable once InconsistentNaming *@
+    private static RenderFragment RenderLinkStatus(bool isRemoved, bool isBlocked) => __builder =>
+    {
+        if (isBlocked)
+        {
+            <span class="text-danger">Blocked</span>
+        }
+        else if (isRemoved)
+        {
+            <span class="text-warning">Removed</span>
+        }
+        else
+        {
+            <span class="text-success">Active</span>
+        }
+    };
+}

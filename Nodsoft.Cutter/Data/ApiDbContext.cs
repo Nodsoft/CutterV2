@@ -31,15 +31,15 @@ public sealed class CutterDbContext(DbContextOptions<CutterDbContext> options) :
         
         modelBuilder.Entity<Link>()
             .Property(l => l.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(/*lang=sql*/"CURRENT_TIMESTAMP");
         
         modelBuilder.Entity<User>()
             .Property(u => u.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(/*lang=sql*/"CURRENT_TIMESTAMP");
         
         modelBuilder.Entity<User>()
             .Property(u => u.UpdatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql(/*lang=sql*/"CURRENT_TIMESTAMP");
             
         modelBuilder.Entity<User>().HasData(new User
         {
@@ -49,6 +49,17 @@ public sealed class CutterDbContext(DbContextOptions<CutterDbContext> options) :
             CreatedAt = y2K,
             UpdatedAt = y2K,
             RawObject = JsonDocument.Parse("""{"legacy": true}""")
+        });
+
+        modelBuilder.Entity<Role>()
+            .HasMany<User>()
+            .WithMany(u => u.Roles);
+        
+        modelBuilder.Entity<Role>().HasData(new Role
+        {
+            Id = 1,
+            Name = "admin",
+            Description = "Platform administrator, has full access to all management features."
         });
         
         base.OnModelCreating(modelBuilder);

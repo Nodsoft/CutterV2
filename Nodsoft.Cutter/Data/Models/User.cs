@@ -26,6 +26,11 @@ public sealed class User : IDisposable
     public string Username { get; set; } = "";
 
     /// <summary>
+    /// The user's assigned roles.
+    /// </summary>
+    public List<Role> Roles { get; set; } = [];
+    
+    /// <summary>
     /// The date and time the user was created.
     /// </summary>
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

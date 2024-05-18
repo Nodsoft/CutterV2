@@ -59,6 +59,9 @@ public class AuthController : ControllerBase
         identity.SetClaim(ClaimTypes.Email, result.Principal!.GetClaim(ClaimTypes.Email))
             .SetClaim(ClaimTypes.Name, result.Principal!.GetClaim(ClaimTypes.Name))
             .SetClaim(ClaimTypes.NameIdentifier, result.Principal!.GetClaim(ClaimTypes.NameIdentifier));
+        
+        // Attach roles
+        identity.SetClaims(ClaimTypes.Role, [..user.Roles.Select(role => role.Name)]);
 
         // Preserve the registration details to be able to resolve them later.
         identity.SetClaim(OpenIddictConstants.Claims.Private.RegistrationId, result.Principal!.GetClaim(OpenIddictConstants.Claims.Private.RegistrationId))

@@ -49,10 +49,18 @@ public sealed class Link
     public IPAddress CreatedFromIp { get; init; } = IPAddress.None;
     
     /// <summary>
-    /// Whether the link is enabled and can be used.
+    /// Whether the link was disabled by the user.
     /// </summary>
     /// <remarks>
-    /// This is used to disable links without removing them from the database.
+    /// This is used to allow users to disable links without removing them from the database.
+    /// </remarks>
+    public bool IsDisabled { get; set; }
+    
+    /// <summary>
+    /// Whether the link was blocked by the system.
+    /// </summary>
+    /// <remarks>
+    /// This is used to block links without removing them from the database (e.g. for abuse).
     /// </remarks>
     public bool IsBlocked { get; set; }
 }

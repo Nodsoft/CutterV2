@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Nodsoft.Cutter.Infrastructure.Serialization;
 
 namespace Nodsoft.Cutter.Data.Models;
 
@@ -45,6 +47,7 @@ public sealed class User : IDisposable
     /// <summary>
     /// The user's unique IP addresses used to authenticate to / access the API.
     /// </summary>
+    [JsonConverter(typeof(IPAddressCollectionJsonConverter<List<IPAddress>>))]
     public List<IPAddress> IpAddresses { get; set; } = [];
     
     /// <summary>
@@ -69,6 +72,7 @@ public sealed class User : IDisposable
     /// <remarks>
     /// This is a navigation property that allows for easy access to the links created by the user.
     /// </remarks>
+    [JsonIgnore]
     public List<Link> Links { get; set; } = [];
     
     public void Dispose()

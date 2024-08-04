@@ -2,8 +2,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Nodsoft.Cutter.Infrastructure.Serialization;
 
 namespace Nodsoft.Cutter.Data.Models;
 
@@ -45,7 +47,7 @@ public sealed class Link
     /// <summary>
     /// The IP address the link was created from.
     /// </summary>
-    [Required]
+    [Required, JsonConverter(typeof(IPAddressJsonConverter))]
     public IPAddress CreatedFromIp { get; init; } = IPAddress.None;
     
     /// <summary>

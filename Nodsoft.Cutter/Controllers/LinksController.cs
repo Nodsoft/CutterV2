@@ -30,14 +30,9 @@ public class LinksController : ControllerBase
     {
         Link? link = await _linksService.GetLinkAsync(id);
 
-        if (link is null)
+        if (link is not { IsBlocked: false, IsDisabled: false })
         {
-            return StatusCode(404);
-        }
-
-        if (link.IsBlocked)
-        {
-            return StatusCode(410);
+            return NotFound();
         }
 
         return RedirectPermanent(link.Destination);

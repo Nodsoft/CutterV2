@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +16,7 @@ namespace Nodsoft.Cutter;
 
 public class Program
 {
-    private static IConfiguration _configuration = null!;
+    private static ConfigurationManager _configuration = null!;
     
     public static async Task Main(string[] args)
     {
@@ -56,7 +58,11 @@ public class Program
         );
         
         // API
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
         
         // Blazor
         services.AddRazorComponents()
@@ -78,7 +84,7 @@ public class Program
             .AddCookie();
         
         services.AddOpenIddict()
-            .AddCore(options =>
+            .AddCore(static options =>
             {
                 options.UseEntityFrameworkCore()
                     .UseDbContext<CutterDbContext>()

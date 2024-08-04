@@ -40,7 +40,8 @@ public sealed class LinksService
     /// Gets all links in the database.
     /// </summary>
     /// <returns>An enumerable collection of all links in the database.</returns>
-    public IQueryable<Link> GetLinks() => _dbContext.Links.AsNoTrackingWithIdentityResolution();
+    public IQueryable<Link> GetLinks() => _dbContext.Links.AsNoTrackingWithIdentityResolution()
+        .Include(l => l.CreatedBy);
     
     /// <summary>
     /// Gets a link by its fragment.
@@ -106,6 +107,8 @@ public sealed class LinksService
         Link link = await GetLinkAsync(name) ?? throw new InvalidOperationException("The link does not exist.");
         link.IsDisabled = true;
         await _dbContext.SaveChangesAsync();
+        
+        _logger.LogInformation("Disabled link {LinkId} with name {Name} and destination {Destination}", link.Id, link.Name, link.Destination);
         return link;
     }
     
@@ -120,6 +123,8 @@ public sealed class LinksService
         Link link = await GetLinkAsync(name) ?? throw new InvalidOperationException("The link does not exist.");
         link.IsDisabled = false;
         await _dbContext.SaveChangesAsync();
+        
+        _logger.LogInformation("Enabled link {LinkId} with name {Name} and destination {Destination}", link.Id, link.Name, link.Destination);
         return link;
     }
     
@@ -133,6 +138,8 @@ public sealed class LinksService
         Link link = await GetLinkAsync(name) ?? throw new InvalidOperationException("The link does not exist.");
         link.IsBlocked = true;
         await _dbContext.SaveChangesAsync();
+        
+        _logger.LogInformation("Blocked link {LinkId} with name {Name} and destination {Destination}", link.Id, link.Name, link.Destination);
         return link;
     }
     

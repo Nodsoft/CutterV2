@@ -25,7 +25,7 @@ public sealed class UserService
     /// </summary>
     /// <param name="id">The unique identifier of the user to get.</param>
     /// <returns>The user with the specified identifier, or <see langword="null"/> if no user was found.</returns>
-    public async ValueTask<User?> GetUserAsync(uint id) => await _dbContext.Users.FindAsync(id);
+    public async ValueTask<User?> GetUserAsync(uint id) => await _dbContext.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == id);
     
     /// <summary>
     /// Gets a user by their username.
@@ -55,7 +55,13 @@ public sealed class UserService
         }
         
         user.MapFromClaims(authUser.Claims);
-        user.IpAddresses.Add(httpContext.Connection.RemoteIpAddress ?? throw new InvalidOperationException("The remote IP address is missing."));
+        
+        IPAddress ip = httpContext.Connection.RemoteIpAddress ?? throw new InvalidOperationException("The remote IP address is missing.");
+        
+        if (!user.IpAddresses.Contains(ip))
+        {
+            user.IpAddresses.Add(ip);
+        }
         
         await _dbContext.SaveChangesAsync();
         return user;

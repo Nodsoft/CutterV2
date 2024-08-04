@@ -1,71 +1,32 @@
 @inject LinksService LinksService
 @inject IJSRuntime JS
+@rendermode InteractiveServer
 
-@if (Links is not null && Links.Any())
+@if (Links is [_, ..])
 {
     <table class="table table-hover">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Destination</th>
-                <th>Created At</th>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Destination</th>
+                <th scope="col">Created At</th>
                 
                 @if (!SelfLinksOnly)
                 {
-                    <th>Created By</th>
-                    <th>IP Address</th>
+                    <th scope="col">Created By</th>
+                    <th scope="col">IP Address</th>
                 }
                 
-                <th>Status</th>
-                <th>Actions</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
             </tr>
         </thead>
         
         <tbody>
-            @foreach (Link link in Links)
-            {
-                <tr @key="link.Id" class="align-middle">
-                    <td><code>@link.Id</code></td>
-                    <td><code>@link.Name</code></td>
-                    <td><a target="_blank" href="@link.Destination" title="@link.Destination">@link.Destination</a></td>
-                    <td>@link.CreatedAt.ToString("g")</td>
-                    
-                    @if (!SelfLinksOnly)
-                    {
-                        <td><a target="_blank" href="https://github.com/@link.CreatedBy.Username" title="@link.CreatedBy.Username">@link.CreatedBy.Username</a></td>
-                        <td>@link.CreatedFromIp</td>
-                    }
-                    
-                    <td>@RenderLinkStatus(false, link.IsBlocked)</td>
-                    
-                    <td class="d-flex flex-row gap-1">
-                        <button class="btn btn-sm btn-info" title="Copy link to clipboard" @onclick="async () => await CopyLinkToClipboardAsync(link)">
-                            <i class="bi bi-clipboard"></i>
-                        </button>
-                        
-                        @if (link.IsDisabled)
-                        {
-                            <button class="btn btn-sm btn-success" title="Enable link" @onclick="async () => await LinksService.EnableLinkAsync(link.Name)">
-                                <i class="bi bi-power"></i>
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-sm btn-danger" title="Disable link" @onclick="async () => await LinksService.DisableLinkAsync(link.Name)">
-                                <i class="bi bi-power"></i>
-                            </button>
-                        }
-                        
-                        @if (!SelfLinksOnly)
-                        {
-                            <button class="btn btn-sm btn-danger" title="Block link" @onclick="async () => await LinksService.BlockLinkAsync(link.Name)">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </button>
-                        }
-                    </td>
-                </tr>
-            }
+            <Virtualize @ref="@_linksTable" Items="@Links" Context="link">
+                <LinksRow Link="@link" CreatedBy="@link.CreatedBy" SelfLinksOnly="@SelfLinksOnly" />
+            </Virtualize>
         </tbody>
     </table>
 }
@@ -76,28 +37,9 @@ else
 
 
 @code {
-    [Parameter, EditorRequired] public List<Link>? Links { get; set; }
-
+    [Parameter, EditorRequired] public Link[] Links { get; set; } = [];
+    
     [Parameter] public bool SelfLinksOnly { get; set; }
-    
-    private async Task CopyLinkToClipboardAsync(Link link) => await JS.InvokeVoidAsync(/*lang=js*/"navigator.clipboard.writeText", LinksService.GetLinkUri(link).ToString());
 
-    @* ReSharper disable once InconsistentNaming *@
-    private static RenderFragment RenderLinkStatus(bool isRemoved, bool isBlocked) => __builder =>
-    {
-        if (isBlocked)
-        {
-            <span class="text-danger">Blocked</span>
-        }
-        else if (isRemoved)
-        {
-            <span class="text-warning">Removed</span>
-        }
-        else
-        {
-            <span class="text-success">Active</span>
-        }
-    };
-    
-    
+    private Virtualize<Link> _linksTable = new();
 }

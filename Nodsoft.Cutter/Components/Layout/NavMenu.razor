@@ -1,8 +1,5 @@
 ﻿@using System.Reflection
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
-@using OpenIddict.Client.WebIntegration
-@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <nav id="sidebar" class="collapsed" aria-label="sidebar">
     <div class="navbar-brand">
@@ -23,36 +20,54 @@
                 <label>Home</label>
             </NavLink>
         </div>
+        
+        <AuthorizeView Roles="admin">
+            <Authorized>
+                <div class="nav-category" role="group" aria-label="admin" aria-expanded="true">
+                    <div class="nav-title pb-1">
+                        <i class="bi bi-gear me-3" aria-hidden="true"></i>
+                        <label>Admin</label>
+                    </div>
+                    
+                    <NavLink class="nav-item nav-link" href="admin/links">
+                        <i class="bi bi-link-45deg me-3" aria-hidden="true"></i>
+                        <label>Links</label>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        
     </div>
 
     <div role="presentation" class="sidenav-bottom" aria-label="Vault navigation">
-        @if (_user is not null)
-        {
-            <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
-                <div class="nav-title d-flex gap-3 align-items-center" style="padding-inline-start: 0.5rem">
-                    <img src="@_user.Claims.FirstOrDefault(c => c.Type is "avatar_url")?.Value" alt="avatar" class="img-fluid rounded-circle" height="32" width="32" />
-                    <label>@_user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value</label>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                    <div class="nav-title d-flex gap-3 align-items-center" style="padding-inline-start: 0.5rem">
+                        <img src="@_user.Claims.FirstOrDefault(c => c.Type is "avatar_url")?.Value" alt="avatar" class="img-fluid rounded-circle" height="32" width="32" />
+                        <label>@_user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value</label>
+                    </div>
+
+                    <NavLink class="nav-item nav-link" href="profile">
+                        <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
+                        <label>Profile</label>
+                    </NavLink>
+
+                    <NavLink class="nav-item nav-link" href="logout">
+                        <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
+                        <label>Logout</label>
+                    </NavLink>
                 </div>
-                
-                <NavLink class="nav-item nav-link" href="profile">
-                    <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
-                    <label>Profile</label>
-                </NavLink>
-                
-                <NavLink class="nav-item nav-link" href="logout">
-                    <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
-                    <label>Logout</label>
-                </NavLink>
-            </div>
-        }
-        else
-        {
-            <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
-                <NavLink class="nav-item nav-link" href="challenge">
-                    <i class="bi bi-github me-3" aria-hidden="true"></i>Login
-                </NavLink>
-            </div>
-        }
+            </Authorized>
+            
+            <NotAuthorized>
+                <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                    <NavLink class="nav-item nav-link" href="challenge">
+                        <i class="bi bi-github me-3" aria-hidden="true"></i>Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 
     <footer role="contentinfo" aria-label="footer">
@@ -72,10 +87,12 @@
     
     private ClaimsPrincipal? _user;
     
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
     
     protected override async Task OnParametersSetAsync()
     {
-        if (await AuthenticationStateProvider.GetAuthenticationStateAsync() is { User: { Identity.IsAuthenticated: true } user})
+        if (AuthenticationState is not null && await AuthenticationState is { User: { Identity.IsAuthenticated: true } user})
         {
             _user = user;
         }

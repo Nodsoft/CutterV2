@@ -1,7 +1,9 @@
 @page "/Profile"
-@rendermode InteractiveServer
 @using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
 @attribute [Authorize]
+@rendermode InteractiveServer
+
 
 @inject LinksService LinksService
 
@@ -13,8 +15,9 @@
 @* Links table *@
 <LinksTable SelfLinksOnly Links="@_links" />
 
+
 @code {
-    private List<Link>? _links;
+    private Link[] _links = [];
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationState { get; set; }
@@ -25,7 +28,7 @@
         ClaimsPrincipal user = (await (AuthenticationState ?? throw new InvalidOperationException("AuthenticationState is null."))).User;
         uint uid = uint.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("User ID not found."));
         
-        _links = LinksService.GetLinks().Where(l => l.CreatedBy.Id == uid).ToList();
+        _links = await LinksService.GetLinks().Where(l => l.CreatedBy.Id == uid).ToArrayAsync();
     }
 
 

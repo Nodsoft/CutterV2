@@ -1,0 +1,121 @@
+@using System.Diagnostics.CodeAnalysis
+@implements IDisposable
+@rendermode InteractiveServer
+
+@inject LinksService LinksService
+@inject IJSRuntime JS
+
+<tr class="align-middle">
+    <td><code>@Link.Id.ToString()</code></td>
+    <td><code style="word-break: break-all">@Link.Name</code></td>
+
+    <td>
+        <a target="_blank" href="@Link.Destination" title="@Link.Destination" class="small" style="word-break: break-all;">
+            @RenderEllipsis(Link.Destination)
+        </a>
+    </td>
+
+    <td>@Link.CreatedAt.ToString("g")</td>
+
+    @if (!SelfLinksOnly)
+    {
+        <td><a target="_blank" href="https://github.com/@CreatedBy?.Username" title="@CreatedBy?.Username">@CreatedBy?.Username</a></td>
+        <td>@Link.CreatedFromIp.ToString()</td>
+    }
+
+    <td>
+        @if (Link.IsBlocked)
+        {
+        <span class="text-danger">Blocked</span>
+        }
+        else if (Link.IsDisabled)
+        {
+        <span class="text-warning">Disabled</span>
+        }
+        else
+        {
+        <span class="text-success">Active</span>
+        }
+    </td>
+
+    <td>
+        <div class="d-flex flex-row gap-1">
+            <button class="btn btn-sm btn-info" title="Copy link to clipboard" @onclick="CopyLinkToClipboardAsync">
+                <i class="bi bi-clipboard"></i>
+            </button>
+
+            @if (Link.IsDisabled)
+            {
+            <button class="btn btn-sm btn-success" title="Enable link" @onclick="EnableLinkAsync">
+                <i class="bi bi-power"></i>
+            </button>
+            }
+            else
+            {
+            <button class="btn btn-sm btn-danger" title="Disable link" @onclick="DisableLinkAsync">
+                <i class="bi bi-power"></i>
+            </button>
+            }
+
+            @if (!SelfLinksOnly)
+            {
+            <button class="btn btn-sm btn-danger" title="Block link" @onclick="BlockLinkAsync">
+                <i class="bi bi-exclamation-triangle"></i>
+            </button>
+            }
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public Link Link { get; set; }
+    [Parameter, EditorRequired] public User? CreatedBy { get; set; }
+    [Parameter] public bool SelfLinksOnly { get; set; }
+    
+     private async Task CopyLinkToClipboardAsync() => await JS.InvokeVoidAsync(/*lang=js*/"navigator.clipboard.writeText", LinksService.GetLinkUri(Link).ToString());
+    
+     private async Task DisableLinkAsync()
+     {
+         Link = await LinksService.DisableLinkAsync(Link.Name);
+         await InvokeAsync(StateHasChanged);
+     }
+
+     private async Task EnableLinkAsync()
+     {
+         Link = await LinksService.EnableLinkAsync(Link.Name);
+         await InvokeAsync(StateHasChanged);
+     }
+
+     private async Task BlockLinkAsync()
+     {
+         Link = await LinksService.BlockLinkAsync(Link.Name);
+         await InvokeAsync(StateHasChanged);
+     }
+
+     @* ReSharper disable once InconsistentNaming *@
+     private static RenderFragment RenderLinkStatus(bool isDisabled, bool isBlocked) => __builder =>
+     {
+         if (isBlocked)
+         {
+             <span class="text-danger">Blocked</span>
+         }
+         else if (isDisabled)
+         {
+             <span class="text-warning">Disabled</span>
+         }
+         else
+         {
+             <span class="text-success">Active</span>
+         }
+     };
+
+     private static string RenderEllipsis(string text, int length = 128) 
+         => text.Length > length 
+             ? $"{text[..length]}..." 
+             : text;
+
+    public void Dispose()
+    {
+        CreatedBy.Dispose();
+    }
+}

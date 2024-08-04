@@ -48,12 +48,12 @@ public sealed class UserService
             user = new()
             {
                 Id = id,
-                Username = authUser.GetClaim(ClaimTypes.Name) ?? throw new InvalidOperationException("The username claim is missing.")
             };
             
             _dbContext.Users.Add(user);
         }
-        
+
+        user.Username = authUser.GetClaim("login") ?? throw new InvalidOperationException("The username claim is missing.");
         user.MapFromClaims(authUser.Claims);
         
         IPAddress ip = httpContext.Connection.RemoteIpAddress ?? throw new InvalidOperationException("The remote IP address is missing.");

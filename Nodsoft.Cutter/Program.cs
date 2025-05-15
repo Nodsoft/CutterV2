@@ -1,7 +1,9 @@
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Components;
 using Nodsoft.Cutter.Data;
@@ -102,7 +104,8 @@ public class Program
 
                 // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
                 options.UseAspNetCore()
-                    .EnableRedirectionEndpointPassthrough();
+                    .EnableRedirectionEndpointPassthrough()
+                    .DisableTransportSecurityRequirement(); // HTTPS is handled by the reverse proxy.
 
                 // Register the GitHub integration.
                 options.UseWebProviders()
@@ -159,6 +162,26 @@ public class Program
         {
             app.UseExceptionHandler("/Error");
             app.UseHsts();
+            
+            IPAddress[] allowedProxies = app.Configuration.GetSection("AllowedProxies").Get<string[]>()?.Select(IPAddress.Parse).ToArray() ?? [];
+
+            // Nginx configuration step
+            ForwardedHeadersOptions forwardedHeadersOptions = new()
+            {
+                ForwardedHeaders = ForwardedHeaders.All
+            };
+
+            if (allowedProxies is { Length: not 0 })
+            {
+                forwardedHeadersOptions.KnownProxies.Clear();
+
+                foreach (IPAddress address in allowedProxies)
+                {
+                    forwardedHeadersOptions.KnownProxies.Add(address);
+                }
+            }
+            
+            app.UseForwardedHeaders(forwardedHeadersOptions);
         }
         
         app.UseHttpsRedirection();

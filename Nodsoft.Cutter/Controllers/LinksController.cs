@@ -9,7 +9,8 @@ namespace Nodsoft.Cutter.Controllers;
 /// <summary>
 /// Provides functionality for managing and accessing cutter links.
 /// </summary>
-public class LinksController : ControllerBase
+[ApiController]
+public sealed class LinksController : ControllerBase
 {
     private readonly LinksService _linksService;
     private readonly UserService _userService;
@@ -26,7 +27,7 @@ public class LinksController : ControllerBase
     /// <param name="id">The fragment of the link to redirect to.</param>
     /// <returns>A redirect to the destination URL of the link.</returns>
     [HttpGet("go/{id}")]
-    public async ValueTask<IActionResult> RedirectToLink([FromRoute] string id)
+    public async ValueTask<ActionResult> RedirectToLink([FromRoute] string id)
     {
         Link? link = await _linksService.GetLinkAsync(id);
 
@@ -35,7 +36,8 @@ public class LinksController : ControllerBase
             return NotFound();
         }
 
-        return RedirectPermanent(link.Destination);
+        Uri uri = new(link.Destination, UriKind.Absolute);
+        return RedirectPermanent(uri.AbsoluteUri);
     }
     
     /// <summary>
@@ -51,7 +53,7 @@ public class LinksController : ControllerBase
     ) {
         if (await _userService.GetUserAsync(User.Identity?.Name ?? "") is { IsBlocked: true })
         {
-            return StatusCode(403);
+            return Forbid();
         }
         
         Link link = await _linksService.InsertLinkAsync(name, destination);

@@ -14,7 +14,7 @@ namespace Nodsoft.Cutter.Controllers;
 /// Responsible for handling authentication and authorization requests.
 /// </summary>
 [ApiController]
-public class AuthController : ControllerBase
+public sealed class AuthController : ControllerBase
 {
     private readonly UserService _userService;
     
@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
     /// Provides a callback for authenticating via GitHub.
     /// </summary>
     [HttpGet, HttpPost, Route("callback/login/github")]
-    public async ValueTask<IActionResult> LoginCallbackAsync()
+    public async Task<ActionResult> LoginCallbackAsync()
     {
         // Retrieve the authorization data validated by OpenIddict as part of the callback handling.
         AuthenticateResult result = await HttpContext.AuthenticateAsync(OpenIddictClientWebIntegrationConstants.Providers.GitHub);
@@ -86,7 +86,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <returns>A sign-out result.</returns>
     [HttpGet, Route("logout")]
-    public async ValueTask<IActionResult> LogoutAsync()
+    public async Task<RedirectResult> LogoutAsync()
     {
         await HttpContext.SignOutAsync();
         return Redirect("/");

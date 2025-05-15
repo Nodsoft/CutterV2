@@ -3,6 +3,7 @@ using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Nodsoft.Cutter.Data.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace Nodsoft.Cutter.Data;
 
@@ -27,6 +28,8 @@ public sealed class CutterDbContext(DbContextOptions<CutterDbContext> options) :
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        UpdateOpenIddictTablesNaming(modelBuilder);
+        
         DateTimeOffset y2K = new(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
         
         modelBuilder.Entity<Link>()
@@ -63,5 +66,16 @@ public sealed class CutterDbContext(DbContextOptions<CutterDbContext> options) :
         });
         
         base.OnModelCreating(modelBuilder);
+    }
+    
+    /// <summary>
+    /// Updates the OpenIddict tables naming to match Postgres naming conventions.
+    /// </summary>
+    private static void UpdateOpenIddictTablesNaming(ModelBuilder builder)
+    {
+        builder.Entity<OpenIddictEntityFrameworkCoreApplication<Guid>>().ToTable("openiddict_applications");
+        builder.Entity<OpenIddictEntityFrameworkCoreAuthorization<Guid>>().ToTable("openiddict_authorizations");
+        builder.Entity<OpenIddictEntityFrameworkCoreScope<Guid>>().ToTable("openiddict_scopes");
+        builder.Entity<OpenIddictEntityFrameworkCoreToken<Guid>>().ToTable("openiddict_tokens");
     }
 }

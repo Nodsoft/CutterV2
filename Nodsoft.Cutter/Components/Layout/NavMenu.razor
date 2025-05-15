@@ -1,29 +1,101 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorApp1</a>
+﻿@using System.Reflection
+@using System.Security.Claims
+
+<nav id="sidebar" class="collapsed" aria-label="sidebar">
+    <div class="navbar-brand">
+        <div class="d-flex gap-3 align-items-center flex-grow-1">
+            <a href="">NSYS Cutter</a>
+            @* <span class="version badge-transparent small">@Version</span> *@
+        </div>
+
+        <button type="button" class="sidebar-toggler">
+            <span aria-hidden="true" class="sidebar-toggler-icon" onclick="document.getElementById('sidebar').classList.toggle('collapsed')"></span>
+        </button>
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+    <div role="presentation" class="sidenav" aria-label="Vault navigation">
+        <div id="" class="nav-category" role="group" aria-label="root" aria-expanded="true">
+            <NavLink class="nav-item nav-link" href="" Match="NavLinkMatch.All">
+                <i class="bi bi-house-fill me-3" aria-hidden="true"></i>
+                <label>Home</label>
             </NavLink>
         </div>
+        
+        <AuthorizeView Roles="admin">
+            <Authorized>
+                <div class="nav-category" role="group" aria-label="admin" aria-expanded="true">
+                    <div class="nav-title pb-1">
+                        <i class="bi bi-gear me-3" aria-hidden="true"></i>
+                        <label>Admin</label>
+                    </div>
+                    
+                    <NavLink class="nav-item nav-link" href="admin/links">
+                        <i class="bi bi-link-45deg me-3" aria-hidden="true"></i>
+                        <label>Links</label>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        
+    </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+    <div role="presentation" class="sidenav-bottom" aria-label="Vault navigation">
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                    <div class="nav-title d-flex gap-3 align-items-center" style="padding-inline-start: 0.5rem">
+                        <img src="@_user.Claims.FirstOrDefault(c => c.Type is "avatar_url")?.Value" alt="avatar" class="img-fluid rounded-circle" height="32" width="32" />
+                        <label>@_user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Name)?.Value</label>
+                    </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
+                    <NavLink class="nav-item nav-link" href="profile">
+                        <i class="bi bi-person-fill me-3" aria-hidden="true"></i>
+                        <label>Profile</label>
+                    </NavLink>
+
+                    <NavLink class="nav-item nav-link" href="logout">
+                        <i class="bi bi-door-closed-fill me-3" aria-hidden="true"></i>
+                        <label>Logout</label>
+                    </NavLink>
+                </div>
+            </Authorized>
+            
+            <NotAuthorized>
+                <div class="nav-category" role="group" aria-label="auth" aria-expanded="true">
+                    <NavLink class="nav-item nav-link" href="challenge">
+                        <i class="bi bi-github me-3" aria-hidden="true"></i>Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+
+    <footer role="contentinfo" aria-label="footer">
+        <hr aria-hidden="true" style="opacity: 0.2; margin-bottom: 2rem;" />
+        
+        <ul aria-label="links">
+            <li><a target="_blank" rel="external" href="https://github.com/Nodsoft/CutterV2">GitHub</a></li>
+        </ul>
+
+        <small aria-description="copyright">© 2022-2024 Nodsoft Systems, ISC License</small>
+    </footer>
+</nav>
+
+@code {
+    
+    public static string Version => $"{typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]}";
+    
+    private ClaimsPrincipal? _user;
+    
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AuthenticationState is not null && await AuthenticationState is { User: { Identity.IsAuthenticated: true } user})
+        {
+            _user = user;
+        }
+    }
+
+}

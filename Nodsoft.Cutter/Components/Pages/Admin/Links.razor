@@ -1,0 +1,21 @@
+@page "/admin/links"
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "admin")]
+@inject LinksService LinksService
+@rendermode InteractiveServer
+
+
+<PageTitle>Admin: Links</PageTitle>
+<h1>Links</h1>
+
+<LinksTable Links="@_links" />
+
+@code {
+    Link[] _links = [];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _links = await LinksService.GetLinks().OrderByDescending(l => l.CreatedAt).ToArrayAsync();
+    }
+
+}
